@@ -9,7 +9,10 @@ Key features:
 - **Parameterized queries**: Allows passing parameters to native queries safely, preventing SQL Injection.
 - **Dynamic filters**: Supports flexible filters using annotations and filter objects.
 - **Spring Data integration**: Supports pagination, sorting, and JdbcTemplate usage.
-- **External SQL files**: Queries can be stored in separate `.sql` files, making maintenance and versioning easier.
+- **External SQL files as template engines**: SQL files are treated as template engines using Freemarker. This means you can add conditionals, loops, and other logic directly in your SQL files, making queries highly dynamic and maintainable. Each Freemarker command is placed inside SQL comments (e.g., `-- <#if ...>`), so the SQL remains valid and readable even outside the application. This approach allows you to:
+  - Write flexible queries that adapt to input parameters.
+  - Keep your SQL files clean and versionable.
+  - Use advanced logic without breaking SQL compatibility.
 
 In this project example, NativeQuery is used to:
 - Retrieve complete and aggregated sales by customer.
