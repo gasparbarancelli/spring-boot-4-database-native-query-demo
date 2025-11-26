@@ -1,6 +1,7 @@
 package com.grupopan.demo.nativequery;
 
 import io.github.gasparbarancelli.NativeQuery;
+import io.github.gasparbarancelli.NativeQueryFileName;
 import io.github.gasparbarancelli.NativeQueryParam;
 import io.github.gasparbarancelli.NativeQueryUseJdbcTemplate;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,8 @@ public interface SalesNativeQuery extends NativeQuery {
     List<SaleFullResult> findSales();
 
     @NativeQueryUseJdbcTemplate
-    List<SaleFullResult> findSales(@NativeQueryParam(value = "customerId") int customerId);
+    @NativeQueryFileName("findSales")
+    List<SaleFullResult> findSalesByCustomerId(@NativeQueryParam(value = "customerId") int customerId);
 
     @NativeQueryUseJdbcTemplate
     List<SaleFullResult> findSales(@NativeQueryParam(value = "filter", addChildren = true) SalesFilter filter);

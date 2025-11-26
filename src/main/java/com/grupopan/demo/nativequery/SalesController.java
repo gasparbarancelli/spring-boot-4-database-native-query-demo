@@ -26,7 +26,7 @@ public class SalesController {
 
     @GetMapping("/customer/{customerId}")
     public List<SaleFullResult> findSalesByCustomerId(@PathVariable("customerId") int customerId) {
-        return salesNativeQuery.findSales(customerId);
+        return salesNativeQuery.findSalesByCustomerId(customerId);
     }
 
     @PostMapping("/filter")
