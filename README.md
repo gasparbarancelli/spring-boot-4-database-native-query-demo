@@ -1,8 +1,28 @@
-# Projeto NativeQuery - Exemplo de Uso
+# NativeQuery Project - Usage Example
 
-Este projeto demonstra o uso da biblioteca [nativequery](https://github.com/gasparbarancelli/nativequery) em uma aplicação Spring Boot para realizar consultas nativas SQL e mapear resultados diretamente para classes Java.
+## About the NativeQuery Library
 
-## Estrutura do Projeto
+The [spring-nativequery](https://github.com/gasparbarancelli/nativequery) library enables you to execute native SQL queries in Spring Boot projects in a simple, safe, and flexible way. It allows you to map query results directly to Java classes (DTOs or records) without the need for JPA entities, making data access more performant and decoupled.
+
+Key features:
+- **Automatic mapping**: Query results are converted to Java classes using compatible field names.
+- **Parameterized queries**: Allows passing parameters to native queries safely, preventing SQL Injection.
+- **Dynamic filters**: Supports flexible filters using annotations and filter objects.
+- **Spring Data integration**: Supports pagination, sorting, and JdbcTemplate usage.
+- **External SQL files**: Queries can be stored in separate `.sql` files, making maintenance and versioning easier.
+
+In this project example, NativeQuery is used to:
+- Retrieve complete and aggregated sales by customer.
+- Use dynamic filters and parameters in native queries.
+- Map results directly to DTOs and Java records, without JPA entities.
+
+---
+
+# NativeQuery Project - Usage Example
+
+This project demonstrates how to use the [nativequery](https://github.com/gasparbarancelli/nativequery) library in a Spring Boot application to perform native SQL queries and map results directly to Java classes.
+
+## Project Structure
 
 ```
 src/
@@ -17,12 +37,12 @@ src/
         SalesNativeQuery.java
     resources/
       application.properties
-      db/migration/V1__create_user_table.sql
+      db/migration/V1__import.sql
       nativeQuery/findSales.sql
       nativeQuery/findSalesCustomers.sql
 ```
 
-## Exemplos de Código
+## Code Examples
 
 ### NativequeryApplication.java
 ```java
@@ -32,9 +52,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
+// Main Spring Boot application class
 @SpringBootApplication
 @EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 public class NativequeryApplication {
+    // Main method to start the application
     public static void main(String[] args) {
         SpringApplication.run(NativequeryApplication.class, args);
     }
@@ -48,15 +70,16 @@ package com.grupopan.demo.nativequery;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+// DTO for sales results by customer
 public class SaleCustomerResult {
-    private Integer id;
-    private BigDecimal totalAmount;
-    private String status;
-    private Integer customerId;
-    private String customerFullName;
-    private String customerEmail;
-    private Integer customerActive;
-    // getters e setters
+    private Integer id; // Sale ID
+    private BigDecimal totalAmount; // Total sale amount
+    private String status; // Sale status
+    private Integer customerId; // Customer ID
+    private String customerFullName; // Customer full name
+    private String customerEmail; // Customer email
+    private Integer customerActive; // Customer active status
+    // getters and setters
 }
 ```
 
@@ -67,28 +90,29 @@ package com.grupopan.demo.nativequery;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+// Record for complete sale result, including items, payments, and customer
 public record SaleFullResult(
-    int id,
-    LocalDateTime saleDate,
-    int customerId,
-    String customerFullName,
-    String customerEmail,
-    int customerActive,
-    int saleItemId,
-    int saleItemQuantity,
-    BigDecimal saleItemUnitPrice,
-    BigDecimal saleItemDiscount,
-    int productId,
-    String productName,
-    String productDescription,
-    BigDecimal productPrice,
-    int productActive,
-    int salePaymentId,
-    String salePaymentPaymentType,
-    BigDecimal salePaymentPaidAmount,
-    LocalDateTime salePaymentPaymentDate,
-    BigDecimal totalAmount,
-    String status
+    int id, // Sale ID
+    LocalDateTime saleDate, // Sale date
+    int customerId, // Customer ID
+    String customerFullName, // Customer full name
+    String customerEmail, // Customer email
+    int customerActive, // Customer active status
+    int saleItemId, // Sale item ID
+    int saleItemQuantity, // Item quantity
+    BigDecimal saleItemUnitPrice, // Item unit price
+    BigDecimal saleItemDiscount, // Item discount
+    int productId, // Product ID
+    String productName, // Product name
+    String productDescription, // Product description
+    BigDecimal productPrice, // Product price
+    int productActive, // Product active status
+    int salePaymentId, // Payment ID
+    String salePaymentPaymentType, // Payment type
+    BigDecimal salePaymentPaidAmount, // Paid amount
+    LocalDateTime salePaymentPaymentDate, // Payment date
+    BigDecimal totalAmount, // Total sale amount
+    String status // Sale status
 ) {}
 ```
 
@@ -99,10 +123,12 @@ package com.grupopan.demo.nativequery;
 import io.github.gasparbarancelli.NativeQueryOperator;
 import io.github.gasparbarancelli.NativeQueryParam;
 
+// Filter for sales queries
 public record SalesFilter(
-        Number id,
+        Number id, // Sale ID
         @NativeQueryParam(value = "name", operator = NativeQueryOperator.CONTAINING)
-        String customerName) {
+        String customerName // Customer name for search
+) {
 }
 ```
 
@@ -117,16 +143,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Repository;
 
+// Interface for native queries using the nativequery library
+@Repository
 public interface SalesNativeQuery extends NativeQuery {
+    // Query sales by customer
     List<SaleCustomerResult> findSalesCustomers();
+    // Paginated query of sales by customer
     Page<SaleCustomerResult> findSalesCustomers(Pageable pageable);
+    // Query all sales
     @NativeQueryUseJdbcTemplate
     List<SaleFullResult> findSales();
+    // Query sales by customer ID
     @NativeQueryUseJdbcTemplate
     List<SaleFullResult> findSales(@NativeQueryParam(value = "customerId") int customerId);
+    // Query sales using filter
     @NativeQueryUseJdbcTemplate
     List<SaleFullResult> findSales(@NativeQueryParam(value = "filter", addChildren = true) SalesFilter filter);
+    // Dynamic query using parameter map
     @NativeQueryUseJdbcTemplate
     List<SaleFullResult> findSales(Map<String, Object> params);
 }
@@ -144,25 +179,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// REST controller for sales endpoints
 @RestController
 @RequestMapping("/sales")
 public class SalesController {
-    private final SalesNativeQuery salesNativeQuery;
+    private final SalesNativeQuery salesNativeQuery; // Injects the query interface
     public SalesController(SalesNativeQuery salesNativeQuery) {
         this.salesNativeQuery = salesNativeQuery;
     }
+    // Returns all sales
     @GetMapping
     public List<SaleFullResult> findSales() {
         return salesNativeQuery.findSales();
     }
+    // Returns sales by customer ID
     @GetMapping("/customer/{customerId}")
     public List<SaleFullResult> findSalesByCustomerId(@PathVariable("customerId") int customerId) {
         return salesNativeQuery.findSales(customerId);
     }
+    // Returns sales filtered
     @PostMapping("/filter")
     public List<SaleFullResult> findSalesByFilter(@RequestBody SalesFilter filter) {
         return salesNativeQuery.findSales(filter);
     }
+    // Returns sales using dynamic parameters
     @GetMapping("/dynamic")
     public List<SaleFullResult> findDynamicSales() {
         Map<String, Object> map = new HashMap<>();
@@ -170,10 +210,12 @@ public class SalesController {
         map.put("c.id", 1);
         return salesNativeQuery.findSales(map);
     }
+    // Returns aggregated sales by customer
     @GetMapping("/customers")
     public List<SaleCustomerResult> findSalesCustomers() {
         return salesNativeQuery.findSalesCustomers();
     }
+    // Returns paginated aggregated sales by customer
     @GetMapping("/customers/pageable")
     public Page<SaleCustomerResult> findSalesCustomersPageable(Pageable pageable) {
         return salesNativeQuery.findSalesCustomers(pageable);
@@ -183,6 +225,7 @@ public class SalesController {
 
 ### application.properties
 ```properties
+# Application and database configuration
 spring.application.name=nativequery
 native-query.package-scan=com.grupopan.demo.nativequery
 spring.datasource.url=jdbc:mysql://localhost:3306/demo?useSSL=false&serverTimezone=UTC
@@ -194,8 +237,9 @@ spring.flyway.enabled=true
 spring.flyway.locations=classpath:db/migration
 ```
 
-### V1__create_user_table.sql
+### V1__import.sql
 ```sql
+-- Main tables for sales domain
 CREATE TABLE CUSTOMER (
     id        INT          NOT NULL AUTO_INCREMENT,
     full_name VARCHAR(100) NOT NULL,
@@ -242,6 +286,7 @@ CREATE TABLE SALE_PAYMENT (
 
 ### findSales.sql
 ```sql
+-- Native query to fetch complete sales
 SELECT
     s.id AS id,
     s.sale_date AS saleDate,
@@ -289,6 +334,7 @@ ORDER BY s.id, si.id, sp.id
 
 ### findSalesCustomers.sql
 ```sql
+-- Native query to fetch aggregated sales by customer
 SELECT
     s.id AS id,
     s.total_amount AS totalAmount,
@@ -309,28 +355,19 @@ package com.grupopan.demo.nativequery;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+// Application context test
 @SpringBootTest
 class NativequeryApplicationTests {
     @Test
     void contextLoads() {
+        // Tests if the context loads correctly
     }
 }
 ```
 
-## Como Executar
-
-1. Configure o banco de dados conforme o arquivo `application.properties`.
-2. Execute as migrações do Flyway para criar as tabelas.
-3. Inicie a aplicação com:
-   ```sh
-   ./mvnw spring-boot:run
-   ```
-4. Utilize os endpoints REST para testar as consultas nativas.
-
-## Observações
-- Os exemplos de SQL e implementação das queries podem ser adaptados conforme seu modelo de dados.
-- O uso da biblioteca `nativequery` facilita o mapeamento direto dos resultados das queries nativas para DTOs e records Java.
+## Notes
+- The SQL examples and query implementations can be adapted to your data model.
+- The `nativequery` library makes it easy to map native query results directly to DTOs and Java records.
 
 ---
-Projeto de exemplo para uso da biblioteca [nativequery](https://github.com/gasparbarancelli/nativequery) em aplicações Spring Boot.
-
+Example project for using the [nativequery](https://github.com/gasparbarancelli/nativequery) library in Spring Boot applications.
