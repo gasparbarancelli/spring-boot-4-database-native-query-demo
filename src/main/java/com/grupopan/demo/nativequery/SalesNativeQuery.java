@@ -5,12 +5,12 @@ import io.github.gasparbarancelli.NativeQueryParam;
 import io.github.gasparbarancelli.NativeQueryUseJdbcTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 
-@Service
+@Repository
 public interface SalesNativeQuery extends NativeQuery {
 
     List<SaleCustomerResult> findSalesCustomers();
